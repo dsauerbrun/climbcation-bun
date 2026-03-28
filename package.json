@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "npx nodemon",
+    "start": "bun run src/index.ts",
     "start:prod": "npm run build && node dist/index.js",
     "migrate:up": "npm run build && node dist/db/migrate_up.js",
     "migrate:down": "npm run build && node dist/db/migrate_down.js",
