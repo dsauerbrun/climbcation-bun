@@ -1,7 +1,7 @@
 import { Request } from "express"
 import { rateLimiter } from "../lib/middlewares/index.js"
 import { ControllerEndpoint, TypedRequestBody, TypedResponse } from "../lib/models.js"
-import { FullLocation, LocationName, getAllLocationNames, getLocation, changeLocationEmail, createInfoSection, CreateInfoSectionResponse, createSectionEdit, createAccommodationEdit } from '../services/location.service/index.js'
+import { FullLocation, LocationName, getAllLocationNames, getLocation, changeLocationEmail, createInfoSection, CreateInfoSectionResponse, createSectionEdit, createAccommodationEdit, createGettingInEdit, createFoodOptionsEdit } from '../services/location.service/index.js'
 
 const locationRoutes: ControllerEndpoint[] = [
   {
@@ -112,6 +112,50 @@ const locationRoutes: ControllerEndpoint[] = [
 
       const { accommodations, accommodationNotes, closestAccommodation } = location
       const { error } = await createAccommodationEdit({ locationId, accommodations, accommodationNotes, closestAccommodation })
+      if (error) {
+        res.status(400).send(error)
+        return
+      }
+
+      res.json({})
+    }
+  },
+  {
+    routePath: '/api/locations/:id/gettingin',
+    method: 'post',
+    middlewares: [rateLimiter],
+    executionFunction: async (req: TypedRequestBody<{location: {transportations: unknown, bestTransportationCost: string, bestTransportationId: number, gettingInNotes: string, walkingDistance: boolean}}>, res: TypedResponse<{}>) => {
+      const locationId = parseInt(req.params.id)
+      const { location } = req.body
+      if (!location) {
+        res.status(400).send('Missing location')
+        return
+      }
+
+      const { transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance } = location
+      const { error } = await createGettingInEdit({ locationId, transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance })
+      if (error) {
+        res.status(400).send(error)
+        return
+      }
+
+      res.json({})
+    }
+  },
+  {
+    routePath: '/api/locations/:id/foodoptions',
+    method: 'post',
+    middlewares: [rateLimiter],
+    executionFunction: async (req: TypedRequestBody<{location: {foodOptionDetails: unknown, commonExpensesNotes: string, savingMoneyTips: string}}>, res: TypedResponse<{}>) => {
+      const locationId = parseInt(req.params.id)
+      const { location } = req.body
+      if (!location) {
+        res.status(400).send('Missing location')
+        return
+      }
+
+      const { foodOptionDetails, commonExpensesNotes, savingMoneyTips } = location
+      const { error } = await createFoodOptionsEdit({ locationId, foodOptionDetails, commonExpensesNotes, savingMoneyTips })
       if (error) {
         res.status(400).send(error)
         return
