@@ -73,6 +73,15 @@ export const getLocation = async ({ locationSlug }: LocationRequest): Promise<Lo
     // get accommodations
     const { accommodations } = await getAccommodations({ locationId: id })
 
+    const s3Base = `https://${process.env.AWS_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`
+    const idPartition = String(id).padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1/$2/$3')
+    const homeThumbUrl = homeThumbFileName
+      ? `${s3Base}/locations/home_thumbs/${id}/${homeThumbFileName}`
+      : null
+    const legacyHomeThumbUrl = homeThumbFileName
+      ? `${s3Base}/locations/home_thumbs/${idPartition}/original/${homeThumbFileName}`
+      : null
+
     return {
       location: {
         id,
@@ -100,7 +109,8 @@ export const getLocation = async ({ locationSlug }: LocationRequest): Promise<Lo
         updatedAt: DateTime.fromJSDate(updatedAt),
         bestTransportation,
         transportations,
-        homeThumb: homeThumbFileName,
+        homeThumbUrl,
+        legacyHomeThumbUrl,
         foodOptions,
         grades,
         accommodations,

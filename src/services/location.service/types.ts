@@ -5,13 +5,10 @@ export interface Location {
   longitude: number
   name: string
   active: boolean
-  homeThumb: string
   rating: number
   slug: string
   createdAt: DateTime
   updatedAt: DateTime
-
-
 }
 
 export interface LocationName{ name: string, slug: string }
@@ -36,6 +33,8 @@ export interface FullLocation extends Location {
   soloFriendly: boolean
   transportations: Transportation[]
   walkingDistance: boolean
+  homeThumbUrl: string | null
+  legacyHomeThumbUrl: string | null
 }
 
 export interface Grade {
