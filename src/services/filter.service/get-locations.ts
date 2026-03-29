@@ -3,7 +3,7 @@ import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { FilterLocation, MapLocation } from "./types.js"
 import { getDateRanges } from "../location.service/get-date-ranges.js"
-import { getClimbingTypes } from "../location.service/index.js"
+import { getClimbingTypes, getThumbUrls } from "../location.service/index.js"
 import { getGradesForLocations } from "../location.service/get-grades.js"
 import { DB } from 'kysely-codegen'
 
@@ -175,7 +175,7 @@ export const getLocations = async ({ filter, mapFilter, cursor, sort }: Location
         longitude: location.longitude,
         dateRange: locationRanges[location.id],
         name: location.name,
-        homeThumb: location.homeThumbFileName,
+        ...getThumbUrls(location.id, location.homeThumbFileName),
         rating: location.rating,
         slug: location.slug,
         climbingTypes: climbingTypes[location.id],
@@ -200,11 +200,10 @@ export const getLocations = async ({ filter, mapFilter, cursor, sort }: Location
         longitude: location.longitude,
         dateRange: locationRanges[location.id],
         name: location.name,
-        homeThumb: location.homeThumbFileName,
+        ...getThumbUrls(location.id, location.homeThumbFileName),
         rating: location.rating,
         slug: location.slug,
         climbingTypes: climbingTypes[location.id],
-        grades: grades[location.id],
         walkingDistance: location.walkingDistance,
         soloFriendly: location.soloFriendly,
         distance: Number(location.distance),

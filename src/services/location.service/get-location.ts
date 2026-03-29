@@ -9,6 +9,7 @@ import { getGradesForLocation } from "./get-grades.js"
 import { getAccommodations } from "./get-accommodations.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { getClimbingTypesForLocation } from "./get-climbing-types.js"
+import { getThumbUrls } from "./get-thumb-urls.js"
 
 
 interface LocationRequest {
@@ -73,14 +74,7 @@ export const getLocation = async ({ locationSlug }: LocationRequest): Promise<Lo
     // get accommodations
     const { accommodations } = await getAccommodations({ locationId: id })
 
-    const s3Base = `https://${process.env.AWS_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com`
-    const idPartition = String(id).padStart(9, '0').replace(/(\d{3})(\d{3})(\d{3})/, '$1/$2/$3')
-    const homeThumbUrl = homeThumbFileName
-      ? `${s3Base}/locations/home_thumbs/${id}/${homeThumbFileName}`
-      : null
-    const legacyHomeThumbUrl = homeThumbFileName
-      ? `${s3Base}/locations/home_thumbs/${idPartition}/original/${homeThumbFileName}`
-      : null
+    const { homeThumbUrl, legacyHomeThumbUrl } = getThumbUrls(id, homeThumbFileName)
 
     return {
       location: {
