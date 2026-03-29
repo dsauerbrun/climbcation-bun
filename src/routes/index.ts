@@ -2,7 +2,7 @@ import { Request, Response, ErrorRequestHandler } from "express";
 import { DateTime } from "luxon"
 
 import locationRoutes from "../controllers/location.controller.js"
-import locationEditsRoutes from "../controllers/location-edits.controller.js"
+import adminRoutes from "../controllers/admin.controller.js"
 import filterRoutes from "../controllers/filter.controller.js"
 import crudRoutes from "../controllers/crud.controller.js"
 import forumRoutes from "../controllers/forum.controller.js"
@@ -12,7 +12,7 @@ import { Application } from "express";
 
 const allRoutes = [
   ...locationRoutes,
-  ...locationEditsRoutes,
+  ...adminRoutes,
   ...filterRoutes,
   ...crudRoutes,
   ...forumRoutes,

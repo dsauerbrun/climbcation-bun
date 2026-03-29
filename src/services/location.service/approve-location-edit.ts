@@ -5,16 +5,11 @@ import { applyAccommodationEdit, applyFoodOptionsEdit, applyGettingInEdit, apply
 interface Request {
   locationId: number
   editId: number
-  password: string
 }
 
 export interface ApproveLocationEditResponse extends ServiceResponseError {}
 
-export const approveLocationEdit = async ({ locationId, editId, password }: Request): Promise<ApproveLocationEditResponse> => {
-  if (password !== process.env.ADMIN_PASSWORD) {
-    return { error: 'Unauthorized' }
-  }
-
+export const approveLocationEdit = async ({ locationId, editId }: Request): Promise<ApproveLocationEditResponse> => {
   try {
     const locationEdit = await db.selectFrom('locationEdits')
       .selectAll()
