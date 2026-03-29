@@ -7,4 +7,5 @@ export * from './create-section-edit.js';
 export * from './create-accommodation-edit.js';
 export * from './create-getting-in-edit.js';
 export * from './create-food-options-edit.js';
+export * from './approve-location-edit.js';
 export * from './types.js'
