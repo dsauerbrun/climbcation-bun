@@ -1,7 +1,7 @@
 import { rateLimiter } from "../lib/middlewares/index.js"
 import { isAuthenticated } from "../lib/middlewares/authenticate.middleware.js"
 import { ControllerEndpoint, TypedRequestBody, TypedRequestQuery, TypedResponse } from "../lib/models.js"
-import { GetThreadResponse, getThread, EditPostResponse, editPost } from "../services/forum.service/index.js"
+import { GetThreadResponse, getThread, EditPostResponse, editPost, PostCommentResponse, postComment } from "../services/forum.service/index.js"
 
 const forumRoutes: ControllerEndpoint[] = [
   {
@@ -23,6 +23,31 @@ const forumRoutes: ControllerEndpoint[] = [
       }
 
       res.json(thread)
+    }
+  },
+  {
+    routePath: '/api/threads/:id/posts',
+    method: 'post',
+    middlewares: [rateLimiter, isAuthenticated],
+    executionFunction: async (req: TypedRequestBody<{content: string}>, res: TypedResponse<PostCommentResponse>) => {
+      if (!req.user.verified) {
+        res.status(400).send('You must verify your account before you can post a comment. Please check your email for your verification link.')
+        return
+      }
+
+      const { content } = req.body
+      if (!content) {
+        res.status(400).send('Missing content')
+        return
+      }
+
+      const { post, error } = await postComment({ threadId: req.params.id, userId: req.user.userId, content })
+      if (error) {
+        res.status(400).send(error)
+        return
+      }
+
+      res.json({ post })
     }
   },
   {
