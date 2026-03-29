@@ -1,7 +1,7 @@
 import { Request } from "express"
 import { rateLimiter } from "../lib/middlewares/index.js"
 import { ControllerEndpoint, TypedRequestBody, TypedResponse } from "../lib/models.js"
-import { FullLocation, LocationName, getAllLocationNames, getLocation, changeLocationEmail, createInfoSection, CreateInfoSectionResponse, createSectionEdit } from '../services/location.service/index.js'
+import { FullLocation, LocationName, getAllLocationNames, getLocation, changeLocationEmail, createInfoSection, CreateInfoSectionResponse, createSectionEdit, createAccommodationEdit } from '../services/location.service/index.js'
 
 const locationRoutes: ControllerEndpoint[] = [
   {
@@ -90,6 +90,28 @@ const locationRoutes: ControllerEndpoint[] = [
       }
 
       const { error } = await createSectionEdit({ locationId, sectionId, section, userId: req.user?.userId })
+      if (error) {
+        res.status(400).send(error)
+        return
+      }
+
+      res.json({})
+    }
+  },
+  {
+    routePath: '/api/locations/:id/accommodations',
+    method: 'post',
+    middlewares: [rateLimiter],
+    executionFunction: async (req: TypedRequestBody<{location: {accommodations: unknown, accommodationNotes: string, closestAccommodation: string}}>, res: TypedResponse<{}>) => {
+      const locationId = parseInt(req.params.id)
+      const { location } = req.body
+      if (!location) {
+        res.status(400).send('Missing location')
+        return
+      }
+
+      const { accommodations, accommodationNotes, closestAccommodation } = location
+      const { error } = await createAccommodationEdit({ locationId, accommodations, accommodationNotes, closestAccommodation })
       if (error) {
         res.status(400).send(error)
         return
