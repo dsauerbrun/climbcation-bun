@@ -5,7 +5,6 @@ import locationRoutes from "../controllers/location.controller.js"
 import filterRoutes from "../controllers/filter.controller.js"
 import crudRoutes from "../controllers/crud.controller.js"
 import forumRoutes from "../controllers/forum.controller.js"
-import infoSectionsRoutes from "../controllers/info-sections.controller.js"
 import { ControllerEndpoint } from "../lib/models.js"
 import userRoutes from "../controllers/user.controller.js"
 import { Application } from "express";
@@ -15,7 +14,6 @@ const allRoutes = [
   ...filterRoutes,
   ...crudRoutes,
   ...forumRoutes,
-  ...infoSectionsRoutes,
   ...userRoutes,
 ]
 

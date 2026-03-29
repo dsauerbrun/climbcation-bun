@@ -1,7 +1,7 @@
 import { Request } from "express"
 import { rateLimiter } from "../lib/middlewares/index.js"
 import { ControllerEndpoint, TypedRequestBody, TypedResponse } from "../lib/models.js"
-import { FullLocation, LocationName, getAllLocationNames, getLocation, changeLocationEmail } from '../services/location.service/index.js'
+import { FullLocation, LocationName, getAllLocationNames, getLocation, changeLocationEmail, createInfoSection, CreateInfoSectionResponse, createSectionEdit } from '../services/location.service/index.js'
 
 const locationRoutes: ControllerEndpoint[] = [
   {
@@ -47,6 +47,49 @@ const locationRoutes: ControllerEndpoint[] = [
       }
 
       const { error } = await changeLocationEmail({ locationId, email })
+      if (error) {
+        res.status(400).send(error)
+        return
+      }
+
+      res.json({})
+    }
+  },
+  {
+    routePath: '/api/locations/:locationId/sections',
+    method: 'post',
+    middlewares: [rateLimiter],
+    executionFunction: async (req: TypedRequestBody<{section: {title: string, body: string}}>, res: TypedResponse<CreateInfoSectionResponse>) => {
+      const locationId = parseInt(req.params.locationId)
+      const { section } = req.body
+      if (!section) {
+        res.status(400).send('Missing section')
+        return
+      }
+
+      const { id, error } = await createInfoSection({ locationId, section })
+      if (error) {
+        res.status(400).send(error)
+        return
+      }
+
+      res.json({ id })
+    }
+  },
+  {
+    routePath: '/api/locations/:locationId/sections/:id',
+    method: 'post',
+    middlewares: [rateLimiter],
+    executionFunction: async (req: TypedRequestBody<{section: Record<string, unknown>}>, res: TypedResponse<{}>) => {
+      const locationId = parseInt(req.params.locationId)
+      const sectionId = parseInt(req.params.id)
+      const { section } = req.body
+      if (!section) {
+        res.status(400).send('Missing section')
+        return
+      }
+
+      const { error } = await createSectionEdit({ locationId, sectionId, section, userId: req.user?.userId })
       if (error) {
         res.status(400).send(error)
         return
