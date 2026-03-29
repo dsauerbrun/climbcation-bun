@@ -1,8 +1,20 @@
 import { Request } from "express"
+import multer from "multer"
 import { rateLimiter } from "../lib/middlewares/index.js"
 import { ControllerEndpoint, TypedRequestBody, TypedResponse } from "../lib/models.js"
 import { approveLocationEdit, ApproveLocationEditResponse } from "../services/location.service/index.js"
-import { getUnapprovedEdits, GetUnapprovedEditsResponse, approveLocation, ApproveLocationResponse, updateLocation, UpdateLocationResponse } from "../services/admin.service/index.js"
+import { getUnapprovedEdits, GetUnapprovedEditsResponse, approveLocation, ApproveLocationResponse, updateLocation, UpdateLocationResponse, uploadLocationImage, UploadLocationImageResponse } from "../services/admin.service/index.js"
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      cb(new Error('Only image files are allowed'))
+      return
+    }
+    cb(null, true)
+  },
+})
 
 const checkAdminPassword = (req: Request): boolean => {
   return req.headers['x-admin-password'] === process.env.ADMIN_PASSWORD
@@ -89,6 +101,30 @@ const adminRoutes: ControllerEndpoint[] = [
       }
 
       res.json({})
+    }
+  },
+  {
+    routePath: '/api/admin/locations/:id/image',
+    method: 'post',
+    middlewares: [rateLimiter, upload.single('image')],
+    executionFunction: async (req: Request, res: TypedResponse<UploadLocationImageResponse>) => {
+      if (!checkAdminPassword(req)) {
+        res.status(401).send('Unauthorized')
+        return
+      }
+
+      if (!req.file) {
+        res.status(400).send('Missing image file')
+        return
+      }
+
+      const { url, error } = await uploadLocationImage({ locationId: parseInt(req.params.id), file: req.file })
+      if (error) {
+        res.status(400).send(error)
+        return
+      }
+
+      res.json({ url })
     }
   },
 ]
