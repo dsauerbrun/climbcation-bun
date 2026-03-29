@@ -21,7 +21,7 @@ const locationRoutes: ControllerEndpoint[] = [
     }
   },
   {
-    routePath: '/location/name/all',
+    routePath: '/api/location/name/all',
     method: 'get',
     middlewares: [rateLimiter],
     executionFunction: async (_req: Request, res: TypedResponse<LocationName[]>) => {
