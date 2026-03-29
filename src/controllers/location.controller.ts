@@ -1,7 +1,7 @@
 import { Request } from "express"
 import { rateLimiter } from "../lib/middlewares/index.js"
 import { ControllerEndpoint, TypedRequestBody, TypedResponse } from "../lib/models.js"
-import { FullLocation, LocationName, getAllLocationNames, getLocation, changeLocationEmail, createInfoSection, CreateInfoSectionResponse, createSectionEdit, createAccommodationEdit, createGettingInEdit, createFoodOptionsEdit } from '../services/location.service/index.js'
+import { FullLocation, LocationName, getAllLocationNames, getLocation, changeLocationEmail, createInfoSection, CreateInfoSectionResponse, createSectionEdit, createAccommodationEdit, createGettingInEdit, createFoodOptionsEdit, createLocation, CreateLocationResponse } from '../services/location.service/index.js'
 
 const locationRoutes: ControllerEndpoint[] = [
   {
@@ -162,6 +162,52 @@ const locationRoutes: ControllerEndpoint[] = [
       }
 
       res.json({})
+    }
+  },
+  {
+    routePath: '/api/locations/submit_new_location',
+    method: 'post',
+    middlewares: [rateLimiter],
+    executionFunction: async (req: TypedRequestBody<{
+      name: string,
+      rating: number,
+      soloFriendly: boolean,
+      country: string,
+      airport: string,
+      climbingTypes: {id: number, gradeId?: number}[],
+      months: {id: number}[],
+      sections: {title: string, body: string}[],
+      accommodations: {accommodations: {id: number, cost: string}[], accommodationNotes: string, closestAccommodation: string},
+      foodOptions: {foodOptionDetails: {id: number, cost: string}[], commonExpensesNotes: string, savingMoneyTips: string},
+      gettingIn: {transportations: number[], bestTransportationCost: string, bestTransportationId: number, gettingInNotes: string, walkingDistance: boolean},
+    }>, res: TypedResponse<CreateLocationResponse>) => {
+      const { name, rating, soloFriendly, country, airport, climbingTypes, months, sections, accommodations, foodOptions, gettingIn } = req.body
+      if (!name || !country) {
+        res.status(400).send('Missing required fields')
+        return
+      }
+
+      const { id, slug, error } = await createLocation({
+        name,
+        rating,
+        soloFriendly,
+        country,
+        airport,
+        climbingTypes,
+        months,
+        sections,
+        accommodations,
+        foodOptions,
+        gettingIn,
+        userId: req.user?.userId,
+        submitterEmail: req.user?.email,
+      })
+      if (error) {
+        res.status(400).send(error)
+        return
+      }
+
+      res.json({ id, slug })
     }
   },
 ]
