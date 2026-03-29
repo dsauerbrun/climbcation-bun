@@ -1,5 +1,6 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
+import { notifyAdmin } from "../admin.service/notify-admin.js"
 
 interface Request {
   locationId: number
@@ -20,6 +21,7 @@ export const createAccommodationEdit = async ({ locationId, accommodations, acco
       })
       .executeTakeFirstOrThrow()
 
+    notifyAdmin({ editType: 'accommodation', locationId })
     return {}
   } catch (err) {
     const error = err as Error

@@ -1,6 +1,7 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { applyAccommodationEdit, applyFoodOptionsEdit, applyGettingInEdit, AccommodationEdit, FoodOptionsEdit, GettingInEdit } from "./location-edit-helpers.js"
+import { notifyAdmin } from "../admin.service/notify-admin.js"
 
 interface ClimbingTypeInput {
   id: number
@@ -92,6 +93,7 @@ export const createLocation = async (params: Request): Promise<CreateLocationRes
       return newLocation
     })
 
+    notifyAdmin({ editType: 'new', locationId: result.id })
     return { id: result.id, slug: result.slug }
   } catch (err) {
     const error = err as Error
