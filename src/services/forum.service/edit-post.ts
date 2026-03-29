@@ -1,5 +1,6 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
+import { updatePost } from "./record-ops.js"
 
 interface Request {
   postId: string
@@ -24,10 +25,7 @@ export const editPost = async ({ postId, userId, newContent }: Request): Promise
       return { error: 'You do not have permissions to edit this comment.' }
     }
 
-    await db.updateTable('posts')
-      .set({ content: newContent })
-      .where('id', '=', postId)
-      .executeTakeFirstOrThrow()
+    await updatePost(db, postId, { content: newContent }, userId)
 
     return {}
   } catch (err) {

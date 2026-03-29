@@ -1,5 +1,6 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
+import { updateLocation as updateLocationRecord } from "../location.service/record-ops.js"
 
 interface Request {
   locationId: number
@@ -20,10 +21,7 @@ export interface UpdateLocationResponse extends ServiceResponseError {}
 
 export const updateLocation = async ({ locationId, fields }: Request): Promise<UpdateLocationResponse> => {
   try {
-    const result = await db.updateTable('locations')
-      .set(fields)
-      .where('id', '=', locationId)
-      .executeTakeFirst()
+    const result = await updateLocationRecord(db, locationId, fields)
 
     if (!result.numUpdatedRows) {
       return { error: 'Location not found' }

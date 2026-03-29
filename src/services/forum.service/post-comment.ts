@@ -2,6 +2,7 @@ import { DateTime } from "luxon"
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { DESTINATION_CATEGORY_NAME, Post } from "./types.js"
+import { insertPost } from "./record-ops.js"
 
 interface Request {
   threadId: string
@@ -52,10 +53,7 @@ export const postComment = async ({ threadId, userId, content }: Request): Promi
       }
     }
 
-    const dbPost = await db.insertInto('posts')
-      .values({ content, userId, forumThreadId })
-      .returningAll()
-      .executeTakeFirstOrThrow()
+    const dbPost = await insertPost(db, { content, userId, forumThreadId }, userId)
 
     const post: Post = {
       id: Number(dbPost.id),

@@ -2,6 +2,7 @@ import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { applyAccommodationEdit, applyFoodOptionsEdit, applyGettingInEdit, AccommodationEdit, FoodOptionsEdit, GettingInEdit } from "./location-edit-helpers.js"
 import { notifyAdmin } from "../admin.service/notify-admin.js"
+import { insertLocation, insertInfoSection } from "./record-ops.js"
 
 interface ClimbingTypeInput {
   id: number
@@ -42,19 +43,16 @@ export const createLocation = async (params: Request): Promise<CreateLocationRes
     const slug = parameterize(params.name)
 
     const result = await db.transaction().execute(async (trx) => {
-      const newLocation = await trx.insertInto('locations')
-        .values({
-          name: params.name,
-          rating: params.rating,
-          soloFriendly: params.soloFriendly,
-          country: params.country,
-          airportCode: params.airport,
-          slug,
-          userId: params.userId,
-          submitterEmail: params.submitterEmail,
-        })
-        .returning(['id', 'slug'])
-        .executeTakeFirstOrThrow()
+      const newLocation = await insertLocation(trx, {
+        name: params.name,
+        rating: params.rating,
+        soloFriendly: params.soloFriendly,
+        country: params.country,
+        airportCode: params.airport,
+        slug,
+        userId: params.userId,
+        submitterEmail: params.submitterEmail,
+      }, params.userId)
 
       const locationId = newLocation.id
 
@@ -77,16 +75,14 @@ export const createLocation = async (params: Request): Promise<CreateLocationRes
           .execute()
       }
 
-      await applyGettingInEdit(trx, locationId, params.gettingIn)
-      await applyFoodOptionsEdit(trx, locationId, params.foodOptions)
-      await applyAccommodationEdit(trx, locationId, params.accommodations)
+      await applyGettingInEdit(trx, locationId, params.gettingIn, params.userId)
+      await applyFoodOptionsEdit(trx, locationId, params.foodOptions, params.userId)
+      await applyAccommodationEdit(trx, locationId, params.accommodations, params.userId)
 
       // create info sections
       for (const section of params.sections) {
         if (section.title) {
-          await trx.insertInto('infoSections')
-            .values({ locationId, title: section.title, body: section.body })
-            .execute()
+          await insertInfoSection(trx, { locationId, title: section.title, body: section.body }, params.userId)
         }
       }
 

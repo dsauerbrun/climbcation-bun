@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
-import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
+import { updateLocation } from "../location.service/record-ops.js"
+import db from "../../db/index.js"
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -31,15 +32,12 @@ export const uploadLocationImage = async ({ locationId, file }: Request): Promis
       ContentType: file.mimetype,
     }))
 
-    await db.updateTable('locations')
-      .set({
-        homeThumbFileName: file.originalname,
-        homeThumbContentType: file.mimetype,
-        homeThumbFileSize: file.size,
-        homeThumbUpdatedAt: new Date(),
-      })
-      .where('id', '=', locationId)
-      .executeTakeFirstOrThrow()
+    await updateLocation(db, locationId, {
+      homeThumbFileName: file.originalname,
+      homeThumbContentType: file.mimetype,
+      homeThumbFileSize: file.size,
+      homeThumbUpdatedAt: new Date(),
+    })
 
     const url = `https://${process.env.AWS_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
     return { url }

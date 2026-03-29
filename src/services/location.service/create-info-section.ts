@@ -1,5 +1,6 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
+import { insertInfoSection } from "./record-ops.js"
 
 interface Request {
   locationId: number
@@ -19,12 +20,8 @@ export const createInfoSection = async ({ locationId, section }: Request): Promi
       return { error: 'Section title is required' }
     }
 
-    const newSection = await db.insertInto('infoSections')
-      .values({ title: section.title, body: section.body, locationId: locationId })
-      .returning('id')
-      .executeTakeFirstOrThrow()
-
-    return { id: Number(newSection.id) }
+    const newSection = await insertInfoSection(db, { title: section.title, body: section.body, locationId })
+    return { id: newSection.id }
   } catch (err) {
     const error = err as Error
     console.error('Error creating info section', err)
