@@ -7,8 +7,8 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "start:prod": "npm run build && node dist/index.js",
-    "migrate:up": "npm run build && node dist/db/migrate_up.js",
-    "migrate:down": "npm run build && node dist/db/migrate_down.js",
+    "migrate:up": "bun run src/db/migrate_up.ts",
+    "migrate:down": "bun run src/db/migrate_down.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist/* && tsc",
     "codegen": "kysely-codegen  --camel-case --dialect postgres"
