@@ -1,5 +1,6 @@
 import db from "../../db/index.js";
 import { getDateRanges } from "./get-date-ranges.js";
+import { getIconUrls } from "./get-icon-urls.js";
 import { NearbyLocation } from "./types.js";
 import {sql} from 'kysely'
 
@@ -29,7 +30,7 @@ const getNearbyLocations = async ({ locationId }: NearbyLocationArgs): Promise<N
       sql<string>`point(longitude, latitude) <@> point(${longitude}, ${latitude})`. as(`distance`),
       'climbingTypes.name as climbingTypeName',
       'climbingTypes.id as climbingTypeId',
-      'climbingTypes.iconFileName as climbingTypeUrl',
+      'climbingTypes.iconFileName as climbingTypeIconFileName',
     ])
     .execute()
 
@@ -58,7 +59,8 @@ const getNearbyLocations = async ({ locationId }: NearbyLocationArgs): Promise<N
       }
     }
 
-    hash[currLocation.id].climbingTypes.push({ url: currLocation.climbingTypeUrl, name: currLocation.climbingTypeName, id: currLocation.climbingTypeId})
+    const { iconUrl } = getIconUrls('climbingType', currLocation.climbingTypeId, currLocation.climbingTypeIconFileName)
+    hash[currLocation.id].climbingTypes.push({ url: iconUrl, name: currLocation.climbingTypeName, id: currLocation.climbingTypeId})
 
     return hash
   }, {} as {[key: number]: NearbyLocation})

@@ -1,4 +1,5 @@
 import db from "../../db/index.js"
+import { getIconUrls } from "../location.service/index.js"
 import { ClimbingType } from "./types.js"
 
 export interface GetClimbingTypesResponse {
@@ -11,7 +12,8 @@ export const getClimbingTypes = async (): Promise<GetClimbingTypesResponse> => {
     const dbClimbingTypes = await db.selectFrom('climbingTypes').selectAll('climbingTypes').execute()
     const climbingTypes = dbClimbingTypes.map(type => {
       const { name, iconFileName, id } = type
-      return { climbingType: name, url: iconFileName, id }
+      const { iconUrl } = getIconUrls('climbingType', id, iconFileName)
+      return { climbingType: name, url: iconUrl, id }
     })
 
     return { climbingTypes }

@@ -1,4 +1,5 @@
 import db from "../../db/index.js";
+import { getIconUrls } from "./get-icon-urls.js";
 import { Accommodation } from "./types.js";
 
 interface GetAccommodationsArgs {
@@ -17,12 +18,13 @@ export const getAccommodations = async ({ locationId }: GetAccommodationsArgs): 
     .execute()
 
   const accommodations: Accommodation[] = dbAccommodations.map(accommodation => {
-    const { cost, accommodationLocationDetailId, name, iconFileName } = accommodation
+    const { id, cost, accommodationLocationDetailId, name, iconFileName } = accommodation
+    const { iconUrl } = getIconUrls('accommodation', id, iconFileName)
     return {
       id: accommodationLocationDetailId,
       cost,
       name,
-      url: iconFileName,
+      url: iconUrl,
     }
   })
   return { accommodations };

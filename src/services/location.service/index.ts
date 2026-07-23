@@ -10,4 +10,5 @@ export * from './create-food-options-edit.js';
 export * from './approve-location-edit.js';
 export * from './create-location.js';
 export * from './get-thumb-urls.js';
+export * from './get-icon-urls.js';
 export * from './types.js'
