@@ -8,11 +8,14 @@ const forumRoutes: ControllerEndpoint[] = [
     routePath: '/api/threads/:id',
     method: 'get',
     middlewares: [rateLimiter],
-    executionFunction: async (req: TypedRequestQuery<{destinationSlug?: string}>, res: TypedResponse<GetThreadResponse>) => {
+    executionFunction: async (req: TypedRequestQuery<{destination_category?: string}>, res: TypedResponse<GetThreadResponse>) => {
 
+      // destination_category=true means :id is a location slug rather than a thread id.
+      // when the param is absent we fall back to inferring it, which keeps older callers working.
       let destinationSlug = null
       const threadId = Number(req.params.id)
-      if (isNaN(threadId)) {
+      const forceDestination = req.query.destination_category === 'true'
+      if (forceDestination || isNaN(threadId)) {
         destinationSlug = req.params.id
       }
 
