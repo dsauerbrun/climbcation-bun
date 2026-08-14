@@ -1,6 +1,7 @@
 import db from "../../db/index.js";
 import { getDateRanges } from "./get-date-ranges.js";
 import { getIconUrls } from "./get-icon-urls.js";
+import { getThumbUrls } from "./get-thumb-urls.js";
 import { NearbyLocation } from "./types.js";
 import {sql} from 'kysely'
 
@@ -51,7 +52,7 @@ const getNearbyLocations = async ({ locationId }: NearbyLocationArgs): Promise<N
         longitude,
         slug,
         name,
-        homeThumb: homeThumbFileName,
+        ...getThumbUrls(currLocation.id, homeThumbFileName),
         country,
         distance: Number(distance),
         climbingTypes: [],

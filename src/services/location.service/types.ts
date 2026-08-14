@@ -68,7 +68,8 @@ export interface NearbyLocation {
   longitude: number;
   slug: string;
   name: string;
-  homeThumb: string;
+  homeThumbUrl: string | null;
+  legacyHomeThumbUrl: string | null;
   country: string;
   distance: number;
   climbingTypes: ClimbingType[];
