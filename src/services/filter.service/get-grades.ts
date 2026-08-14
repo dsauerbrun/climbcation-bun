@@ -6,13 +6,15 @@ export interface GetGradesResponse {
   error?: string
 }
 
-export const getGrades = async (): Promise<GetGradesResponse> => {
+// the rails app ordered grades differently depending on the consumer:
+// /api/filters/all ascending, /api/get_attribute_options descending
+export const getGrades = async (order: 'asc' | 'desc' = 'asc'): Promise<GetGradesResponse> => {
   try {
     const dbGrades = await db.selectFrom('grades')
       .leftJoin('climbingTypes', 'climbingTypes.id', 'grades.climbingTypeId')
       .selectAll('grades')
       .select(['climbingTypes.name as climbingTypeName', 'climbingTypes.id as climbingTypeId', 'climbingTypes.iconFileName'])
-      .orderBy('grades.order', 'asc').execute()
+      .orderBy('grades.order', order).execute()
 
     const grades = dbGrades.map(grade => {
       const { id, us, french, order, climbingTypeId, climbingTypeName } = grade

@@ -62,7 +62,7 @@ export const getAttributeOptions = async (): Promise<GetAttributeOptionsResponse
       }
     })
     const { climbingTypes } = await getClimbingTypes()
-    const { grades } = await getGrades()
+    const { grades } = await getGrades('desc')
 
 
     return { climbingTypes, grades, accommodations, foodOptions, transportations, months }
