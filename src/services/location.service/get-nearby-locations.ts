@@ -54,7 +54,7 @@ const getNearbyLocations = async ({ locationId }: NearbyLocationArgs): Promise<N
         name,
         ...getThumbUrls(currLocation.id, homeThumbFileName),
         country,
-        distance: Number(distance),
+        distance: Math.round(Number(distance) * 10) / 10,
         climbingTypes: [],
         dateRange,
       }
