@@ -111,7 +111,7 @@ const locationRoutes: ControllerEndpoint[] = [
       }
 
       const { accommodations, accommodationNotes, closestAccommodation } = location
-      const { error } = await createAccommodationEdit({ locationId, accommodations, accommodationNotes, closestAccommodation })
+      const { error } = await createAccommodationEdit({ locationId, accommodations, accommodationNotes, closestAccommodation, userId: req.user?.userId })
       if (error) {
         res.status(400).send(error)
         return
@@ -133,7 +133,7 @@ const locationRoutes: ControllerEndpoint[] = [
       }
 
       const { transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance } = location
-      const { error } = await createGettingInEdit({ locationId, transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance })
+      const { error } = await createGettingInEdit({ locationId, transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance, userId: req.user?.userId })
       if (error) {
         res.status(400).send(error)
         return
@@ -155,7 +155,7 @@ const locationRoutes: ControllerEndpoint[] = [
       }
 
       const { foodOptionDetails, commonExpensesNotes, savingMoneyTips } = location
-      const { error } = await createFoodOptionsEdit({ locationId, foodOptionDetails, commonExpensesNotes, savingMoneyTips })
+      const { error } = await createFoodOptionsEdit({ locationId, foodOptionDetails, commonExpensesNotes, savingMoneyTips, userId: req.user?.userId })
       if (error) {
         res.status(400).send(error)
         return

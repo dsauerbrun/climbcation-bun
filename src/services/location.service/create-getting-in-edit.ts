@@ -9,17 +9,19 @@ interface Request {
   bestTransportationId: number
   gettingInNotes: string
   walkingDistance: boolean
+  userId?: string
 }
 
 export interface CreateGettingInEditResponse extends ServiceResponseError {}
 
-export const createGettingInEdit = async ({ locationId, transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance }: Request): Promise<CreateGettingInEditResponse> => {
+export const createGettingInEdit = async ({ locationId, transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance, userId }: Request): Promise<CreateGettingInEditResponse> => {
   try {
     await db.insertInto('locationEdits')
       .values({
         locationId,
         editType: 'getting_in',
         edit: JSON.stringify({ transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance }),
+        userId,
       })
       .executeTakeFirstOrThrow()
 

@@ -7,17 +7,19 @@ interface Request {
   accommodations: unknown
   accommodationNotes: string
   closestAccommodation: string
+  userId?: string
 }
 
 export interface CreateAccommodationEditResponse extends ServiceResponseError {}
 
-export const createAccommodationEdit = async ({ locationId, accommodations, accommodationNotes, closestAccommodation }: Request): Promise<CreateAccommodationEditResponse> => {
+export const createAccommodationEdit = async ({ locationId, accommodations, accommodationNotes, closestAccommodation, userId }: Request): Promise<CreateAccommodationEditResponse> => {
   try {
     await db.insertInto('locationEdits')
       .values({
         locationId,
         editType: 'accommodation',
         edit: JSON.stringify({ accommodations, accommodationNotes, closestAccommodation }),
+        userId,
       })
       .executeTakeFirstOrThrow()
 
