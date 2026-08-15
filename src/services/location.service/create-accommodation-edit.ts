@@ -1,6 +1,7 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { notifyAdmin } from "../admin.service/notify-admin.js"
+import { insertRecord } from "../../lib/db-records.js"
 
 interface Request {
   locationId: number
@@ -14,14 +15,12 @@ export interface CreateAccommodationEditResponse extends ServiceResponseError {}
 
 export const createAccommodationEdit = async ({ locationId, accommodations, accommodationNotes, closestAccommodation, userId }: Request): Promise<CreateAccommodationEditResponse> => {
   try {
-    await db.insertInto('locationEdits')
-      .values({
-        locationId,
-        editType: 'accommodation',
-        edit: JSON.stringify({ accommodations, accommodationNotes, closestAccommodation }),
-        userId,
-      })
-      .executeTakeFirstOrThrow()
+    await insertRecord(db, 'locationEdits', {
+      locationId,
+      editType: 'accommodation',
+      edit: JSON.stringify({ accommodations, accommodationNotes, closestAccommodation }),
+      userId,
+    })
 
     notifyAdmin({ editType: 'accommodation', locationId })
     return {}

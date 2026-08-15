@@ -1,6 +1,7 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { notifyAdmin } from "../admin.service/notify-admin.js"
+import { insertRecord } from "../../lib/db-records.js"
 
 interface Request {
   locationId: number
@@ -16,14 +17,12 @@ export interface CreateGettingInEditResponse extends ServiceResponseError {}
 
 export const createGettingInEdit = async ({ locationId, transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance, userId }: Request): Promise<CreateGettingInEditResponse> => {
   try {
-    await db.insertInto('locationEdits')
-      .values({
-        locationId,
-        editType: 'getting_in',
-        edit: JSON.stringify({ transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance }),
-        userId,
-      })
-      .executeTakeFirstOrThrow()
+    await insertRecord(db, 'locationEdits', {
+      locationId,
+      editType: 'getting_in',
+      edit: JSON.stringify({ transportations, bestTransportationCost, bestTransportationId, gettingInNotes, walkingDistance }),
+      userId,
+    })
 
     notifyAdmin({ editType: 'getting_in', locationId })
     return {}

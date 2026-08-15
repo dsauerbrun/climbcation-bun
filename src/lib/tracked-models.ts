@@ -13,6 +13,8 @@ export const logVersion = async (
   objectChanges: unknown,
   locationId?: number | null,
 ): Promise<void> => {
+  // versions is append-only and is never updated, so it has a createdAt and no
+  // updatedAt. that keeps it outside insertRecord, which stamps both.
   const version = await dbOrTrx.insertInto('versions').values({
     itemType,
     itemId,

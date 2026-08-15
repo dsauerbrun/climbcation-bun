@@ -3,6 +3,7 @@ import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { DESTINATION_CATEGORY_NAME, Post } from "./types.js"
 import { insertPost } from "./record-ops.js"
+import { insertRecord } from "../../lib/db-records.js"
 
 interface Request {
   threadId: string
@@ -45,10 +46,7 @@ export const postComment = async ({ threadId, userId, content }: Request): Promi
       if (existingThread) {
         forumThreadId = String(existingThread.id)
       } else {
-        const newThread = await db.insertInto('forumThreads')
-          .values({ subject: threadId, userId: '1', categoryId: destinationCategory.id })
-          .returning('id')
-          .executeTakeFirstOrThrow()
+        const newThread = await insertRecord(db, 'forumThreads', { subject: threadId, userId: '1', categoryId: destinationCategory.id })
         forumThreadId = String(newThread.id)
       }
     }
