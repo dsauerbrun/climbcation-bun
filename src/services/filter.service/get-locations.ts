@@ -41,7 +41,10 @@ interface LocationResponse extends ServiceResponseError {
   locations?: FilterLocation[]
   mapLocations?: MapLocation[]
   cursor?: string
+  hasMore?: boolean
 }
+
+const PAGE_SIZE = 10
 const sortMap = {
   'name': {sortColumn: 'locations.name', cursorColumn: 'name', cursorSqlColumn: 'locations.name'},
   'rating': {sortColumn: 'locations.rating', cursorColumn: 'id', cursorSqlColumn: 'locations.id'},
@@ -147,7 +150,12 @@ export const getLocations = async ({ filter, mapFilter, cursor, sort }: Location
     // if a cursor was passed, front end already has all of the map locations from the first query
     const allLocations = cursor ? [] : await locationQuery.execute()
 
-    const locations = await locationQuery.limit(10).execute()
+    // over-fetch a single row so we can tell the caller whether another page exists.
+    // the extra row is sliced off before anything downstream sees it, so the page size
+    // and the cursor keep their existing meaning.
+    const pageLocations = await locationQuery.limit(PAGE_SIZE + 1).execute()
+    const hasMore = pageLocations.length > PAGE_SIZE
+    const locations = pageLocations.slice(0, PAGE_SIZE)
 
     const orderedLocationIds = locations.map(location => location.id)
     const allLocationIds = cursor ? orderedLocationIds : allLocations.map(location => location.id)
@@ -217,6 +225,7 @@ export const getLocations = async ({ filter, mapFilter, cursor, sort }: Location
       locations: orderedLocations,
       mapLocations,
       cursor: orderedLocations[orderedLocations.length - 1] && String(orderedLocations[orderedLocations.length - 1]?.[cursorColumn]),
+      hasMore,
     }
 
   } catch (err) {

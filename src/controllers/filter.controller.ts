@@ -10,16 +10,16 @@ const filterRoutes: ControllerEndpoint[] = [
     routePath: '/api/filter/locations',
     method: 'get',
     middlewares: [rateLimiter, queryParamJson],
-    executionFunction: async (req: Request, res: TypedResponse<{locations: FilterLocation[], mapLocations: MapLocation[], cursor: string}>) => {
+    executionFunction: async (req: Request, res: TypedResponse<{locations: FilterLocation[], mapLocations: MapLocation[], cursor: string, hasMore: boolean}>) => {
       const { filter, mapFilter, cursor, sort } = req.query as unknown as LocationRequest
 
-      const { locations, mapLocations, cursor: newCursor, error } = await getLocations({ filter, mapFilter, cursor, sort })
+      const { locations, mapLocations, cursor: newCursor, hasMore, error } = await getLocations({ filter, mapFilter, cursor, sort })
       if (error) {
         res.status(400).send(error)
         return
       }
 
-      res.json({ locations, cursor: newCursor, mapLocations })
+      res.json({ locations, cursor: newCursor, mapLocations, hasMore })
     }
   },
   {
