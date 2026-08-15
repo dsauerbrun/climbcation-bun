@@ -1,6 +1,7 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { SessionUser } from "./types.js"
+import { updateRecord } from "../../lib/db-records.js"
 import bcrypt from 'bcrypt'
 
 export interface UpdateUserLastIpResponse extends ServiceResponseError {
@@ -13,11 +14,7 @@ export interface UpdateUserLastIpRequest {
 
 export const updateUserLastIp = async ({userId, ip}: UpdateUserLastIpRequest): Promise<UpdateUserLastIpResponse> => {
   try {
-    await db
-      .updateTable('users')
-      .set({'lastIpLogin': ip})
-      .where('id', '=', userId)
-      .executeTakeFirst()
+    await updateRecord(db, 'users', userId, { lastIpLogin: ip })
 
     return { }
   } catch (err) {

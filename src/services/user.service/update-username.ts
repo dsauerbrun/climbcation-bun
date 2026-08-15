@@ -1,5 +1,6 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
+import { updateRecord } from "../../lib/db-records.js"
 
 export interface UpdateUsernameResponse extends ServiceResponseError {
 }
@@ -11,11 +12,7 @@ export interface UpdateUsernameRequest {
 
 export const updateUsername = async ({userId, newUsername}: UpdateUsernameRequest): Promise<UpdateUsernameResponse> => {
   try {
-    await db
-      .updateTable('users')
-      .set({'username': newUsername})
-      .where('id', '=', userId)
-      .executeTakeFirst()
+    await updateRecord(db, 'users', userId, { username: newUsername })
 
     return { }
   } catch (err) {

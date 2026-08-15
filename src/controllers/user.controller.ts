@@ -16,6 +16,7 @@ import db from "../db/db.js"
 import { sendResetPasswordEmail } from "../services/user.service/send-reset-password-email.js"
 import { updateUserPassword } from "../services/user.service/update-user-password.js"
 import { getUserById } from "../services/user.service/get-user-by-id.js"
+import { updateRecord } from "../lib/db-records.js"
 
 const userRoutes: ControllerEndpoint[] = [
   {
@@ -147,14 +148,11 @@ const userRoutes: ControllerEndpoint[] = [
         return
       }
 
-      await db.updateTable('users')
-        .set({
-          verified: true,
-          deleted: false,
-          verifyToken: null,
-        })
-        .where('id', '=', userResp.user.userId)
-        .executeTakeFirstOrThrow() 
+      await updateRecord(db, 'users', userResp.user.userId, {
+        verified: true,
+        deleted: false,
+        verifyToken: null,
+      })
       
       if (userResp.user.deleted) {
         await sendResetPasswordEmail({ userId: userResp.user.userId })
@@ -218,12 +216,7 @@ const userRoutes: ControllerEndpoint[] = [
     executionFunction: async (req: TypedRequestQuery<{}>, res: TypedResponse<{}>) => {
       const userId = req.user.userId
 
-      await db.updateTable('users')
-        .set({
-          deleted: true,
-        })
-        .where('id', '=', userId)
-        .executeTakeFirstOrThrow() 
+      await updateRecord(db, 'users', userId, { deleted: true })
 
       req.logout((err) => {
         if (err) {

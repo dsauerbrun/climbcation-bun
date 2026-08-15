@@ -1,5 +1,6 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
+import { updateRecord } from "../../lib/db-records.js"
 import { applyAccommodationEdit, applyFoodOptionsEdit, applyGettingInEdit, applyMiscEdit, AccommodationEdit, FoodOptionsEdit, GettingInEdit, MiscEdit } from "./location-edit-helpers.js"
 
 interface Request {
@@ -38,10 +39,7 @@ export const approveLocationEdit = async ({ locationId, editId }: Request): Prom
         await applyMiscEdit(trx, edit as MiscEdit)
       }
 
-      await trx.updateTable('locationEdits')
-        .set({ approved: true })
-        .where('id', '=', editId)
-        .execute()
+      await updateRecord(trx, 'locationEdits', editId, { approved: true })
     })
 
     return {}

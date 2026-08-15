@@ -1,6 +1,7 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { getPasswordDetails } from "./utils.js"
+import { updateRecord } from "../../lib/db-records.js"
 
 export interface UpdateUserPasswordResponse extends ServiceResponseError {
 }
@@ -18,15 +19,11 @@ export const updateUserPassword = async ({userId, newUserPassword}: UpdateUserPa
       return { error }
     }
 
-    await db
-      .updateTable('users')
-      .set({
-        password: saltedPassword,
-        passwordSalt: salt,
-        verifyToken: null,
-      })
-      .where('id', '=', userId)
-      .executeTakeFirst()
+    await updateRecord(db, 'users', userId, {
+      password: saltedPassword,
+      passwordSalt: salt,
+      verifyToken: null,
+    })
 
     return { }
   } catch (err) {
