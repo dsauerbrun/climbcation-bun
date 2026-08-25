@@ -3,7 +3,7 @@ import multer from "multer"
 import { rateLimiter } from "../lib/middlewares/index.js"
 import { ControllerEndpoint, TypedRequestBody, TypedResponse } from "../lib/models.js"
 import { approveLocationEdit, ApproveLocationEditResponse } from "../services/location.service/index.js"
-import { getUnapprovedEdits, GetUnapprovedEditsResponse, approveLocation, ApproveLocationResponse, updateLocation, UpdateLocationResponse, uploadLocationImage, UploadLocationImageResponse } from "../services/admin.service/index.js"
+import { getUnapprovedEdits, GetUnapprovedEditsResponse, getLocations, GetLocationsResponse, approveLocation, ApproveLocationResponse, updateLocation, UpdateLocationResponse, uploadLocationImage, UploadLocationImageResponse } from "../services/admin.service/index.js"
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -39,6 +39,33 @@ const adminRoutes: ControllerEndpoint[] = [
       }
 
       res.json({ edits })
+    }
+  },
+  {
+    routePath: '/api/admin/locations',
+    method: 'get',
+    middlewares: [rateLimiter],
+    executionFunction: async (req: Request, res: TypedResponse<GetLocationsResponse>) => {
+      if (!checkAdminPassword(req)) {
+        res.status(401).send('Unauthorized')
+        return
+      }
+
+      const activeParam = req.query.active
+      if (activeParam !== undefined && activeParam !== 'true' && activeParam !== 'false') {
+        res.status(400).send('active must be true or false')
+        return
+      }
+
+      const active = activeParam === undefined ? undefined : activeParam === 'true'
+
+      const { locations, error } = await getLocations({ active })
+      if (error) {
+        res.status(400).send(error)
+        return
+      }
+
+      res.json({ locations })
     }
   },
   {
