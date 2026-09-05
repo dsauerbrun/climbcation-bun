@@ -54,14 +54,17 @@ const userRoutes: ControllerEndpoint[] = [
   },
   {
     routePath: '/api/user/logout',
-    method: 'get',
+    method: 'post',
     middlewares: [rateLimiter],
     executionFunction: async (req: TypedRequestQuery<{}>, res: TypedResponse<{}>) => {
       req.logout((err) => {
         if (err) {
-          res.status(500).json({ error: err })
+          res.status(500).json({ error: err.message })
+          return
         }
-        res.redirect(req.baseUrl);
+
+        res.clearCookie('connect.sid')
+        res.json({})
       })
     },
   },
