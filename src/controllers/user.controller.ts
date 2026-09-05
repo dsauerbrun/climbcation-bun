@@ -17,6 +17,7 @@ import { sendResetPasswordEmail } from "../services/user.service/send-reset-pass
 import { updateUserPassword } from "../services/user.service/update-user-password.js"
 import { getUserById } from "../services/user.service/get-user-by-id.js"
 import { updateRecord } from "../lib/db-records.js"
+import crypto from 'crypto'
 
 const userRoutes: ControllerEndpoint[] = [
   {
@@ -36,7 +37,7 @@ const userRoutes: ControllerEndpoint[] = [
       // Successful authentication, redirect home.
       await updateUserLastIp({ userId: req.user.id, ip: req.ip })
 
-      res.redirect(req.baseUrl)
+      res.redirect(process.env.BASE_URL as string)
     }
   },
   {
@@ -235,8 +236,8 @@ const userRoutes: ControllerEndpoint[] = [
   { routePath: '/auth/google',
     method: 'get',
     middlewares: [rateLimiter],
-    executionFunction: async (req: TypedRequestQuery<{}>, res: TypedResponse<{}>) => {
-      passport.authenticate('google', { scope: ['profile', 'email'] })(req, res)
+    executionFunction: async (req: TypedRequestQuery<{}>, res: TypedResponse<{}>, next) => {
+      passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next)
     }
   }
 ]
@@ -262,13 +263,12 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      //callbackURL: `${process.env.BASE_URL}/api/auth/google/callback`
-      callbackURL: `https://www.climbcation.com/auth/google_oauth2/callback`,
+      callbackURL: `${process.env.API_BASE_URL}/auth/google_oauth2/callback`,
     },
     async function (accessToken, refreshToken, profile, cb) {
       const email = profile.emails[0].value;
       let username = profile.displayName;
-      const password = profile.id;
+      const password = crypto.randomBytes(48).toString('hex');
       const userResp = await getUserByEmail({
         email: profile.emails[0].value,
       });
