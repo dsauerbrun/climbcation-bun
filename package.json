@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "bin": {
+    "climbcation-admin": "src/cli/index.ts"
+  },
   "type": "module",
   "scripts": {
     "start": "bun run src/index.ts",
+    "admin": "bun run src/cli/index.ts",
     "start:prod": "npm run build && node dist/index.js",
     "migrate:up": "bun run src/db/migrate_up.ts",
     "migrate:down": "bun run src/db/migrate_down.ts",
