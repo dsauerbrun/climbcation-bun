@@ -2,7 +2,6 @@ import Express from 'express'
 import BodyParser from 'body-parser'
 import session from 'express-session';
 import PgSimpleStore from 'connect-pg-simple'
-import pg from 'pg'
 import https from 'https'
 import fs from 'fs';
 import passport from 'passport'
@@ -11,13 +10,7 @@ import cors from 'cors'
 import { unhandledExceptionHandler } from './lib/unhandled-exception-handler.js'
 
 import routes from './routes/index.js'
-
-const pgPool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-})
+import { connPool } from './db/db.js';
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -56,7 +49,7 @@ export default class App {
     express.use(
       session({
         store: new (PgSimpleStore(session))({
-          pool: pgPool,
+          pool: connPool
         }),
         secret: process.env.COOKIE_SECRET,
         resave: false,
