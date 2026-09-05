@@ -6,7 +6,9 @@ export interface MapLocation {
   longitude: number
   dateRange: string
   name: string
-  homeThumb: string
+  country: string
+  homeThumbUrl: string | null
+  legacyHomeThumbUrl: string | null
   rating: number
   slug: string
   climbingTypes: LocationClimbingType[]

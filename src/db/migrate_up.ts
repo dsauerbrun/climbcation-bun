@@ -15,7 +15,7 @@ async function migrateToLatest() {
       fs,
       path,
       // This needs to be an absolute path.
-      migrationFolder: path.join(__dirname, '/dist/db/migrations'),
+      migrationFolder: path.join(__dirname, '/src/db/migrations'),
     }),
   })
 

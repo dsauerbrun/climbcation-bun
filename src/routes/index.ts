@@ -2,6 +2,7 @@ import { Request, Response, ErrorRequestHandler } from "express";
 import { DateTime } from "luxon"
 
 import locationRoutes from "../controllers/location.controller.js"
+import adminRoutes from "../controllers/admin.controller.js"
 import filterRoutes from "../controllers/filter.controller.js"
 import crudRoutes from "../controllers/crud.controller.js"
 import forumRoutes from "../controllers/forum.controller.js"
@@ -11,6 +12,7 @@ import { Application } from "express";
 
 const allRoutes = [
   ...locationRoutes,
+  ...adminRoutes,
   ...filterRoutes,
   ...crudRoutes,
   ...forumRoutes,
@@ -63,8 +65,27 @@ const routeWrapper = (routeFunction) => {
   }
 }
 
+const redactSecrets = (text: string): string => {
+  return Object.entries(process.env)
+    .filter(([key, value]) => value && value.length >= 8 && /SECRET|PASSWORD|TOKEN|KEY/i.test(key))
+    .reduce((acc, [, value]) => acc.split(value as string).join('[REDACTED]'), text)
+}
+
+const describeError = (err: any): string => {
+  try {
+    if (!err || typeof err !== 'object') {
+      return String(err)
+    }
+
+    const { stack, ...rest } = err
+    return redactSecrets(JSON.stringify({ name: err.name, message: err.message, ...rest }))
+  } catch {
+    return String(err)
+  }
+}
+
 const errRouteWrapper = (routeFunction) => {
-  return (err: ErrorRequestHandler, req: Request, res: Response, next: any) => {
+  return (err: any, req: Request, res: Response, next: any) => {
     // put any metric tracking data here(eg. datadog)
     const startTime = DateTime.now().valueOf();
 
@@ -74,9 +95,15 @@ const errRouteWrapper = (routeFunction) => {
       console.log(`${req.path} took ${endTime - startTime} ms to complete`);
     });
 
+    if (!routeFunction) {
+      console.error(`Unhandled error for ${req.path}`, describeError(err));
+      next(err);
+      return;
+    }
+
     try {
       routeFunction(err, req, res, next);
-    } catch (err) {
+    } catch {
       unhandledErrorHandler(req, res, err);
     }
   };

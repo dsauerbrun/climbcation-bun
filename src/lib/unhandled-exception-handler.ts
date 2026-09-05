@@ -6,7 +6,7 @@ const unhandledExceptionHandler = (error:Error, req:Request, res:Response, next:
   }
 
   // Do we want to deal with PII masking here on our logs?
-  console.error(`There was an unhandled exception for endpoint ${req.route.path}`, error)
+  console.error(`There was an unhandled exception for endpoint ${req.route?.path ?? req.path}`, error)
 
   const reason = 'There was a problem processing your request.'
   const explanation = 'An unexpected error occured while processing your request. Please try again and if the problem persists, please contact us.'

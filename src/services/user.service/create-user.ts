@@ -3,6 +3,7 @@ import { ServiceResponseError } from "../../lib/index.js"
 import bcrypt from 'bcrypt'
 import { generateVerificationToken } from "./generate-verification-token.js";
 import { getPasswordDetails } from "./utils.js";
+import { insertRecord } from "../../lib/db-records.js";
 
 export interface CreateUserResponse extends ServiceResponseError {
   userId?: string;
@@ -27,23 +28,17 @@ export const createUser = async ({email, username, password, provider, uid, veri
       return { error }
     }
 
-    const newUser = await db
-      .insertInto('users')
-      .values({
-        email,
-        username,
-        password: saltedPassword,
-        passwordSalt: salt,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        provider: provider || 'self',
-        uid: uid || null,
-        verified,
-        googleToken: googleToken || null,
-        googleRefreshToken: refreshToken || null,
-      })
-      .returning(['id'])
-      .executeTakeFirstOrThrow()
+    const newUser = await insertRecord(db, 'users', {
+      email,
+      username,
+      password: saltedPassword,
+      passwordSalt: salt,
+      provider: provider || 'self',
+      uid: uid || null,
+      verified,
+      googleToken: googleToken || null,
+      googleRefreshToken: refreshToken || null,
+    })
     
     await generateVerificationToken({ userId: newUser.id })
 

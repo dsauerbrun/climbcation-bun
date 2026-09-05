@@ -22,7 +22,7 @@ export const getThread = async ({threadId, destinationSlug}: GetThreadRequest): 
       .select([
         sql`CASE WHEN users.deleted THEN '[DELETED]' ELSE users.username END`.as('username'),
       ])
-      .orderBy('posts.createdAt', 'asc')
+      .orderBy('posts.createdAt', 'desc')
 
     if (destinationSlug) {
       const destinationCategory = await db.selectFrom('categories').selectAll('categories').where('name', '=', DESTINATION_CATEGORY_NAME).executeTakeFirstOrThrow()

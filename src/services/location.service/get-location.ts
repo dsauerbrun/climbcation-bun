@@ -9,6 +9,7 @@ import { getGradesForLocation } from "./get-grades.js"
 import { getAccommodations } from "./get-accommodations.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { getClimbingTypesForLocation } from "./get-climbing-types.js"
+import { getThumbUrls } from "./get-thumb-urls.js"
 
 
 interface LocationRequest {
@@ -73,6 +74,8 @@ export const getLocation = async ({ locationSlug }: LocationRequest): Promise<Lo
     // get accommodations
     const { accommodations } = await getAccommodations({ locationId: id })
 
+    const { homeThumbUrl, legacyHomeThumbUrl } = getThumbUrls(id, homeThumbFileName)
+
     return {
       location: {
         id,
@@ -100,7 +103,8 @@ export const getLocation = async ({ locationSlug }: LocationRequest): Promise<Lo
         updatedAt: DateTime.fromJSDate(updatedAt),
         bestTransportation,
         transportations,
-        homeThumb: homeThumbFileName,
+        homeThumbUrl,
+        legacyHomeThumbUrl,
         foodOptions,
         grades,
         accommodations,

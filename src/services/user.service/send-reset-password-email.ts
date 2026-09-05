@@ -19,18 +19,12 @@ export const sendResetPasswordEmail = async ({userId}: SendResetPasswordEmailReq
       .where('id', '=', userId)
       .executeTakeFirstOrThrow()
   
-    const resetPasswordEmailUserUrl = `https://www.climbcation.com/resetpass?id=${token}`;
+    const resetPasswordEmailUserUrl = `${process.env.BASE_URL}/resetpass?id=${token}`;
     const textMessage = `Hello ${user.username}, to reset your password please click ${resetPasswordEmailUserUrl}
 
       If you did not choose to reset your password you can ignore this email.`;
-    const emailMessage = `From: Climbcation <no-reply@climbcation.com>
-To: ${user.username} <${user.email}>
-MIME-Version: 1.0
-Content-type: text/html
-Subject: Reset Climbcation Password 
-
-${textMessage}
-`;
+    const emailMessage = `<p>Hello ${user.username}, to reset your password please <a href="${resetPasswordEmailUserUrl}">click here</a>.</p>
+<p>If you did not choose to reset your password you can ignore this email.</p>`;
 
     await sendUserEmail({
       email: user.email,

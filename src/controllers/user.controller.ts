@@ -16,6 +16,8 @@ import db from "../db/db.js"
 import { sendResetPasswordEmail } from "../services/user.service/send-reset-password-email.js"
 import { updateUserPassword } from "../services/user.service/update-user-password.js"
 import { getUserById } from "../services/user.service/get-user-by-id.js"
+import { updateRecord } from "../lib/db-records.js"
+import crypto from 'crypto'
 
 const userRoutes: ControllerEndpoint[] = [
   {
@@ -35,7 +37,7 @@ const userRoutes: ControllerEndpoint[] = [
       // Successful authentication, redirect home.
       await updateUserLastIp({ userId: req.user.id, ip: req.ip })
 
-      res.redirect(req.baseUrl)
+      res.redirect(process.env.BASE_URL as string)
     }
   },
   {
@@ -53,14 +55,17 @@ const userRoutes: ControllerEndpoint[] = [
   },
   {
     routePath: '/api/user/logout',
-    method: 'get',
+    method: 'post',
     middlewares: [rateLimiter],
     executionFunction: async (req: TypedRequestQuery<{}>, res: TypedResponse<{}>) => {
       req.logout((err) => {
         if (err) {
-          res.status(500).json({ error: err })
+          res.status(500).json({ error: err.message })
+          return
         }
-        res.redirect(req.baseUrl);
+
+        res.clearCookie('connect.sid')
+        res.json({})
       })
     },
   },
@@ -131,7 +136,7 @@ const userRoutes: ControllerEndpoint[] = [
     }
   },
   {
-    routePath: '/verify',
+    routePath: '/api/verify',
     method: 'get',
     middlewares: [rateLimiter],
     executionFunction: async (req: TypedRequestQuery<{id: string}>, res: TypedResponse<{}>) => {
@@ -147,21 +152,21 @@ const userRoutes: ControllerEndpoint[] = [
         return
       }
 
-      await db.updateTable('users')
-        .set({
-          verified: true,
-          deleted: false,
-          verifyToken: null,
-        })
-        .where('id', '=', userResp.user.userId)
-        .executeTakeFirstOrThrow() 
+      await updateRecord(db, 'users', userResp.user.userId, {
+        verified: true,
+        deleted: false,
+        verifyToken: null,
+      })
       
       if (userResp.user.deleted) {
         await sendResetPasswordEmail({ userId: userResp.user.userId })
       }
       
-      req.user.verified = true;
-      res.redirect(req.baseUrl)
+      if (req.user?.userId === userResp.user.userId) {
+        req.user.verified = true
+      }
+
+      res.json({})
     }
   },
   {
@@ -218,12 +223,7 @@ const userRoutes: ControllerEndpoint[] = [
     executionFunction: async (req: TypedRequestQuery<{}>, res: TypedResponse<{}>) => {
       const userId = req.user.userId
 
-      await db.updateTable('users')
-        .set({
-          deleted: true,
-        })
-        .where('id', '=', userId)
-        .executeTakeFirstOrThrow() 
+      await updateRecord(db, 'users', userId, { deleted: true })
 
       req.logout((err) => {
         if (err) {
@@ -236,8 +236,8 @@ const userRoutes: ControllerEndpoint[] = [
   { routePath: '/auth/google',
     method: 'get',
     middlewares: [rateLimiter],
-    executionFunction: async (req: TypedRequestQuery<{}>, res: TypedResponse<{}>) => {
-      passport.authenticate('google', { scope: ['profile', 'email'] })(req, res)
+    executionFunction: async (req: TypedRequestQuery<{}>, res: TypedResponse<{}>, next) => {
+      passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next)
     }
   }
 ]
@@ -263,13 +263,12 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      //callbackURL: `${process.env.BASE_URL}/api/auth/google/callback`
-      callbackURL: `https://www.climbcation.com/auth/google_oauth2/callback`,
+      callbackURL: `${process.env.API_BASE_URL}/auth/google_oauth2/callback`,
     },
     async function (accessToken, refreshToken, profile, cb) {
       const email = profile.emails[0].value;
       let username = profile.displayName;
-      const password = profile.id;
+      const password = crypto.randomBytes(48).toString('hex');
       const userResp = await getUserByEmail({
         email: profile.emails[0].value,
       });

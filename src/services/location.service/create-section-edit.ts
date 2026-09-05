@@ -1,0 +1,31 @@
+import db from "../../db/index.js"
+import { ServiceResponseError } from "../../lib/index.js"
+import { notifyAdmin } from "../admin.service/notify-admin.js"
+import { insertRecord } from "../../lib/db-records.js"
+
+interface Request {
+  locationId: number
+  sectionId: number
+  section: Record<string, unknown>
+  userId: string
+}
+
+export interface CreateSectionEditResponse extends ServiceResponseError {}
+
+export const createSectionEdit = async ({ locationId, sectionId, section, userId }: Request): Promise<CreateSectionEditResponse> => {
+  try {
+    await insertRecord(db, 'locationEdits', {
+      locationId,
+      editType: 'misc',
+      edit: JSON.stringify({ ...section, id: sectionId }),
+      userId,
+    })
+
+    notifyAdmin({ editType: 'misc', locationId })
+    return {}
+  } catch (err) {
+    const error = err as Error
+    console.error('Error creating section edit', err)
+    return { error: error.message }
+  }
+}

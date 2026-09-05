@@ -1,4 +1,5 @@
 import db from "../../db/index.js";
+import { getIconUrls } from "./get-icon-urls.js";
 import { Grade } from "./types.js";
 
 interface GetGradesForLocationArgs {
@@ -18,14 +19,15 @@ export const getGradesForLocation = async ({ locationId }: GetGradesForLocationA
     .execute()
 
   const grades: Grade[] = dbGrades.map(grade => {
-    const { id, us, french, climbingTypeId, climbingTypeName, iconFileName } = grade 
+    const { id, us, french, climbingTypeId, climbingTypeName, iconFileName } = grade
+    const { iconUrl } = getIconUrls('climbingType', climbingTypeId, iconFileName)
     return {
       id,
       grade: `${us}|${french}`,
       type: {
         id: climbingTypeId,
         name: climbingTypeName,
-        url: iconFileName
+        url: iconUrl
       }
     }
   })
@@ -54,6 +56,7 @@ export const getGradesForLocations = async ({ locationIds }: GetGradesForLocatio
   const grades: {[locationId: number]: Grade[]} = {}
   dbGrades.forEach(grade => {
     const { id, us, french, climbingTypeId, climbingTypeName, iconFileName, locationId } = grade
+    const { iconUrl } = getIconUrls('climbingType', climbingTypeId, iconFileName)
     if(!grades[locationId]) {
       grades[locationId] = []
     }
@@ -63,7 +66,7 @@ export const getGradesForLocations = async ({ locationIds }: GetGradesForLocatio
       type: {
         id: climbingTypeId,
         name: climbingTypeName,
-        url: iconFileName
+        url: iconUrl
       }
     })
   })

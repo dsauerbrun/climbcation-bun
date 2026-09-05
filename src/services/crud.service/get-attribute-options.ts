@@ -1,6 +1,7 @@
 import db from "../../db/index.js"
 import { ServiceResponseError } from "../../lib/index.js"
 import { ClimbingType, getClimbingTypes, getGrades, Grade } from "../filter.service/index.js"
+import { getIconUrls } from "../location.service/index.js"
 import { Accommodation, FoodOption, Month, Transportation } from "./types.js"
 
 export interface GetAttributeOptionsResponse extends ServiceResponseError {
@@ -19,10 +20,11 @@ export const getAttributeOptions = async (): Promise<GetAttributeOptionsResponse
       .selectAll('accommodations').execute()
     const accommodations = dbAccommodations.map(accommodation => {
       const { id, name, iconFileName, costRanges } = accommodation
+      const { iconUrl } = getIconUrls('accommodation', id, iconFileName)
       return {
         id,
         name,
-        url: iconFileName,
+        url: iconUrl,
         ranges: costRanges,
       }
     })
@@ -60,7 +62,7 @@ export const getAttributeOptions = async (): Promise<GetAttributeOptionsResponse
       }
     })
     const { climbingTypes } = await getClimbingTypes()
-    const { grades } = await getGrades()
+    const { grades } = await getGrades('desc')
 
 
     return { climbingTypes, grades, accommodations, foodOptions, transportations, months }
