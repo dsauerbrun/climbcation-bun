@@ -135,7 +135,7 @@ const userRoutes: ControllerEndpoint[] = [
     }
   },
   {
-    routePath: '/verify',
+    routePath: '/api/verify',
     method: 'get',
     middlewares: [rateLimiter],
     executionFunction: async (req: TypedRequestQuery<{id: string}>, res: TypedResponse<{}>) => {
@@ -161,8 +161,11 @@ const userRoutes: ControllerEndpoint[] = [
         await sendResetPasswordEmail({ userId: userResp.user.userId })
       }
       
-      req.user.verified = true;
-      res.redirect(req.baseUrl)
+      if (req.user?.userId === userResp.user.userId) {
+        req.user.verified = true
+      }
+
+      res.json({})
     }
   },
   {

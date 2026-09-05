@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 
 export const generateVerificationEmailText = (username: string, token: string) => {
 
-  const confirmEmailUserUrl = `https://www.climbcation.com/verify?id=${token}`
+  const confirmEmailUserUrl = `${process.env.BASE_URL}/verify?id=${token}`
   const textMessage = `Hello ${username}, thanks for registering on Climbcation! To confirm your registration please click ${confirmEmailUserUrl}`;
   const emailMessage = `
     From: Climbcation <no-reply@climbcation.com>
