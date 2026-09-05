@@ -43,8 +43,6 @@ export const getLocations = async ({ active }: Request): Promise<GetLocationsRes
     if (active === true) {
       query = query.where('active', 'is', true)
     } else if (active === false) {
-      // active is nullable in the schema, so `is not true` catches false and null
-      // alike. anything that is not live is pending as far as an admin cares.
       query = query.where('active', 'is not', true)
     }
 
